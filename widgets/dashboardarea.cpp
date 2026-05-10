@@ -16,7 +16,7 @@ DashboardArea::DashboardArea(SerialManager *serialManager, QWidget *parent)
     , m_serialManager(serialManager)
 {
     setWidgetResizable(true);
-    setFrameStyle(QFrame::Box);
+    setFrameStyle(QFrame::NoFrame);
 
     // Main container with toolbar + canvas
     QWidget *container = new QWidget(this);
@@ -26,28 +26,30 @@ DashboardArea::DashboardArea(SerialManager *serialManager, QWidget *parent)
 
     // Toolbar
     QWidget *toolbar = new QWidget(container);
-    toolbar->setFixedHeight(32);
-    toolbar->setStyleSheet("background-color: #e8e8e8; border-bottom: 1px solid #ccc;");
+    toolbar->setFixedHeight(36);
+    toolbar->setStyleSheet("background-color: #fafafa; border-bottom: 1px solid #e5e7eb;");
     QHBoxLayout *toolbarLayout = new QHBoxLayout(toolbar);
-    toolbarLayout->setContentsMargins(6, 2, 6, 2);
-    toolbarLayout->setSpacing(6);
+    toolbarLayout->setContentsMargins(10, 4, 10, 4);
+    toolbarLayout->setSpacing(8);
 
     m_editBtn = new QPushButton("编辑", toolbar);
     m_editBtn->setFixedHeight(26);
     m_editBtn->setStyleSheet(
-        "QPushButton { background-color: #4a90d9; color: white; border: none; "
-        "border-radius: 4px; padding: 0 12px; font-size: 12px; }"
-        "QPushButton:hover { background-color: #357abd; }");
+        "QPushButton { background-color: transparent; color: #374151; border: 1px solid #d1d5db; "
+        "border-radius: 4px; padding: 0 14px; font-size: 12px; }"
+        "QPushButton:hover { background-color: #f3f4f6; border-color: #9ca3af; }"
+        "QPushButton:pressed { background-color: #e5e7eb; }");
     connect(m_editBtn, &QPushButton::clicked, this, &DashboardArea::onEditClicked);
 
     m_saveBtn = new QPushButton("保存", toolbar);
     m_saveBtn->setFixedHeight(26);
     m_saveBtn->setEnabled(false);
     m_saveBtn->setStyleSheet(
-        "QPushButton { background-color: #5cb85c; color: white; border: none; "
-        "border-radius: 4px; padding: 0 12px; font-size: 12px; }"
-        "QPushButton:hover { background-color: #449d44; }"
-        "QPushButton:disabled { background-color: #aaa; }");
+        "QPushButton { background-color: #111827; color: #ffffff; border: none; "
+        "border-radius: 4px; padding: 0 14px; font-size: 12px; }"
+        "QPushButton:hover { background-color: #1f2937; }"
+        "QPushButton:pressed { background-color: #000000; }"
+        "QPushButton:disabled { background-color: #e5e7eb; color: #9ca3af; }");
     connect(m_saveBtn, &QPushButton::clicked, this, &DashboardArea::onSaveClicked);
 
     toolbarLayout->addWidget(m_editBtn);

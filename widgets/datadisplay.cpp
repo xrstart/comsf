@@ -9,8 +9,7 @@ DataDisplay::DataDisplay(const QString &label, const QString &formatStr,
     , m_parser(new Parser(this))
     , m_style(DefaultStyle)
 {
-    setFrameStyle(QFrame::Box | QFrame::Raised);
-    setLineWidth(2);
+    setFrameStyle(QFrame::NoFrame);
     setMinimumSize(120, 60);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -46,19 +45,19 @@ void DataDisplay::applyStyle()
 {
     switch (m_style) {
     case DarkStyle:
-        setStyleSheet("DataDisplay { background-color: #2b2b2b; border: 1px solid #555; border-radius: 6px; }");
-        m_titleLabel->setStyleSheet("font-weight: bold; font-size: 10px; color: #aaa;");
-        m_valueLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #00cc88;");
+        setStyleSheet("DataDisplay { background-color: #111827; border: 1px solid #1f2937; border-radius: 6px; }");
+        m_titleLabel->setStyleSheet("font-weight: 500; font-size: 10px; color: #9ca3af; background: transparent;");
+        m_valueLabel->setStyleSheet("font-size: 20px; font-weight: 600; color: #34d399; background: transparent;");
         break;
     case MinimalStyle:
-        setStyleSheet("DataDisplay { background-color: transparent; border: none; border-bottom: 2px solid #4a90d9; }");
-        m_titleLabel->setStyleSheet("font-size: 10px; color: #888;");
-        m_valueLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #333;");
+        setStyleSheet("DataDisplay { background-color: transparent; border: none; border-bottom: 2px solid #2563eb; }");
+        m_titleLabel->setStyleSheet("font-size: 10px; color: #9ca3af; background: transparent;");
+        m_valueLabel->setStyleSheet("font-size: 18px; font-weight: 600; color: #111827; background: transparent;");
         break;
     default:
-        setStyleSheet("DataDisplay { background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; }");
-        m_titleLabel->setStyleSheet("font-weight: bold; font-size: 10px; color: #333;");
-        m_valueLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #0066cc;");
+        setStyleSheet("DataDisplay { background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; }");
+        m_titleLabel->setStyleSheet("font-weight: 500; font-size: 10px; color: #6b7280; background: transparent;");
+        m_valueLabel->setStyleSheet("font-size: 18px; font-weight: 600; color: #111827; background: transparent;");
         break;
     }
 }

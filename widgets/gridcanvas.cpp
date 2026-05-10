@@ -13,6 +13,7 @@ GridCanvas::GridCanvas(QWidget *parent)
 {
     setMouseTracking(true);
     setMinimumSize(800, 600);
+    setStyleSheet("background-color: #ffffff;");
 }
 
 void GridCanvas::childWasAdded(QWidget *child)
@@ -48,16 +49,17 @@ void GridCanvas::paintEvent(QPaintEvent *event)
         return;
 
     QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
 
     // Draw subtle grid dots
-    p.setPen(QPen(QColor(210, 210, 210), 1));
+    p.setPen(QPen(QColor(229, 231, 235), 1));
     for (int x = 0; x < width(); x += 20)
         for (int y = 0; y < height(); y += 20)
             p.drawPoint(x, y);
 
     // Draw alignment guide lines
     if (!m_guideLines.isEmpty()) {
-        QPen guidePen(QColor(255, 0, 0, 60), 0.5, Qt::SolidLine);
+        QPen guidePen(QColor(37, 99, 235, 80), 0.5, Qt::SolidLine);
         guidePen.setCosmetic(true);
         p.setPen(guidePen);
         for (const QLine &line : m_guideLines)

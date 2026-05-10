@@ -36,21 +36,53 @@ void CustomButton::applyStyle()
     switch (m_style) {
     case RoundedStyle:
         setStyleSheet(
-            "QPushButton { background-color: #4a90d9; color: white; border: none; "
-            "border-radius: 12px; padding: 6px 16px; font-weight: bold; }"
-            "QPushButton:hover { background-color: #357abd; }"
-            "QPushButton:pressed { background-color: #2a6099; }");
+            "QPushButton { background-color: #2563eb; color: white; border: none; "
+            "border-radius: 6px; padding: 6px 16px; font-weight: 500; }"
+            "QPushButton:hover { background-color: #1d4ed8; }"
+            "QPushButton:pressed { background-color: #1e40af; }");
         break;
     case OutlineStyle:
         setStyleSheet(
-            "QPushButton { background-color: transparent; color: #4a90d9; "
-            "border: 2px solid #4a90d9; border-radius: 4px; padding: 6px 16px; font-weight: bold; }"
-            "QPushButton:hover { background-color: #4a90d9; color: white; }"
-            "QPushButton:pressed { background-color: #357abd; color: white; }");
+            "QPushButton { background-color: transparent; color: #374151; "
+            "border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 16px; font-weight: 500; }"
+            "QPushButton:hover { background-color: #f9fafb; border-color: #9ca3af; }"
+            "QPushButton:pressed { background-color: #f3f4f6; }");
+        break;
+    case SquareStyle:
+        setStyleSheet(
+            "QPushButton { background-color: #111827; color: #ffffff; border: none; "
+            "border-radius: 0px; padding: 6px 16px; font-weight: 500; }"
+            "QPushButton:hover { background-color: #1f2937; }"
+            "QPushButton:pressed { background-color: #000000; }");
+        break;
+    case PillStyle:
+        setStyleSheet(
+            "QPushButton { background-color: #111827; color: #ffffff; border: none; "
+            "border-radius: 16px; padding: 6px 20px; font-weight: 500; }"
+            "QPushButton:hover { background-color: #1f2937; }"
+            "QPushButton:pressed { background-color: #000000; }");
+        break;
+    case TextStyle:
+        setStyleSheet(
+            "QPushButton { background-color: transparent; color: #111827; border: none; "
+            "border-radius: 4px; padding: 6px 12px; font-weight: 500; "
+            "text-decoration: underline; }"
+            "QPushButton:hover { color: #2563eb; }"
+            "QPushButton:pressed { color: #1e40af; }");
+        break;
+    case DangerStyle:
+        setStyleSheet(
+            "QPushButton { background-color: #dc2626; color: #ffffff; border: none; "
+            "border-radius: 6px; padding: 6px 16px; font-weight: 500; }"
+            "QPushButton:hover { background-color: #b91c1c; }"
+            "QPushButton:pressed { background-color: #991b1b; }");
         break;
     default:
         setStyleSheet(
-            "QPushButton { font-weight: bold; padding: 6px 12px; }");
+            "QPushButton { background-color: #111827; color: #ffffff; border: none; "
+            "border-radius: 6px; padding: 6px 16px; font-weight: 500; }"
+            "QPushButton:hover { background-color: #1f2937; }"
+            "QPushButton:pressed { background-color: #000000; }");
         break;
     }
 }

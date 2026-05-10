@@ -28,7 +28,7 @@ LogicIndicator::LogicIndicator(const QString &name, const QString &expression,
 
     m_nameLabel = new QLabel(m_name, this);
     m_nameLabel->setAlignment(Qt::AlignCenter);
-    m_nameLabel->setStyleSheet("font-weight: bold; font-size: 10px; color: #333;");
+    m_nameLabel->setStyleSheet("font-weight: 500; font-size: 11px; color: #6b7280; background: transparent;");
     layout->addWidget(m_nameLabel, 0, Qt::AlignTop | Qt::AlignHCenter);
     layout->addStretch(1);
 }
@@ -97,30 +97,26 @@ void LogicIndicator::paintEvent(QPaintEvent *event)
     switch (m_style) {
     case FlatStyle: {
         painter.setBrush(m_currentColor);
-        painter.setPen(QPen(m_currentColor.darker(120), 1));
+        painter.setPen(Qt::NoPen);
         painter.drawEllipse(cx - diameter / 2, cy - diameter / 2, diameter, diameter);
         break;
     }
     case RealisticStyle: {
         QRadialGradient gradient(cx - diameter * 0.15, cy - diameter * 0.15, diameter * 0.55);
-        gradient.setColorAt(0, m_currentColor.lighter(180));
-        gradient.setColorAt(0.5, m_currentColor);
-        gradient.setColorAt(1, m_currentColor.darker(150));
+        gradient.setColorAt(0, m_currentColor.lighter(140));
+        gradient.setColorAt(0.6, m_currentColor);
+        gradient.setColorAt(1, m_currentColor.darker(120));
         painter.setBrush(gradient);
-        painter.setPen(QPen(QColor(80, 80, 80), 2));
-        painter.drawEllipse(cx - diameter / 2, cy - diameter / 2, diameter, diameter);
-        // Highlight
         painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(255, 255, 255, 60));
+        painter.drawEllipse(cx - diameter / 2, cy - diameter / 2, diameter, diameter);
+        // Subtle highlight
+        painter.setBrush(QColor(255, 255, 255, 40));
         painter.drawEllipse(cx - diameter / 4, cy - diameter / 3, diameter / 3, diameter / 4);
         break;
     }
-    default: { // DefaultStyle
-        QRadialGradient gradient(cx, cy - diameter * 0.2, diameter * 0.6);
-        gradient.setColorAt(0, m_currentColor.lighter(150));
-        gradient.setColorAt(1, m_currentColor);
-        painter.setBrush(gradient);
-        painter.setPen(QPen(Qt::darkGray, 2));
+    default: { // DefaultStyle - clean flat circle with subtle border
+        painter.setBrush(m_currentColor);
+        painter.setPen(QPen(m_currentColor.darker(110), 1));
         painter.drawEllipse(cx - diameter / 2, cy - diameter / 2, diameter, diameter);
         break;
     }
