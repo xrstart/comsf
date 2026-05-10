@@ -1,0 +1,30 @@
+# Build outputs
+debug/
+release/
+deploy/
+*.o
+*.exe
+*.dll
+
+# Qt generated files
+Makefile
+Makefile.*
+*.pro.user
+*.qmake.stash
+.qtc_clangd/
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Autosave config
+autosave.json
+
+# IDE
+.vscode/
+*.user
+
+# Claude
+.claude/
+
+# Misc
+新建 文本文档.txt
