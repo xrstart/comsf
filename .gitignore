@@ -1,10 +1,7 @@
 # Build outputs
 debug/
 release/
-deploy/
 *.o
-*.exe
-*.dll
 
 # Qt generated files
 Makefile
