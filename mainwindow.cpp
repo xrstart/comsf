@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "serialmanager.h"
 #include "configmanager.h"
+#include "aiclient.h"
 #include "widgets/dashboardarea.h"
+#include "widgets/dashboardcopilot.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -16,10 +18,15 @@
 #include <QDateTime>
 #include <QWidgetAction>
 #include <QApplication>
+#include <QMenu>
+#include <QTabWidget>
+#include <QInputDialog>
+#include <QDialog>
+#include <QDialogButtonBox>
 
 // Theme 0: 浅色 (Light)
 static const char *THEME_LIGHT = R"(
-    * { font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #1f2937; }
+    * { font-family: "Source Han Sans SC", "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #1f2937; }
     QMainWindow, QWidget { background-color: #f5f5f5; }
     QMenuBar { background-color: #ffffff; border-bottom: 1px solid #e5e7eb; padding: 0 4px; spacing: 2px; }
     QMenuBar::item { padding: 6px 12px; border-radius: 4px; color: #374151; }
@@ -64,11 +71,16 @@ static const char *THEME_LIGHT = R"(
     QStatusBar { background-color: #ffffff; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; padding: 0 8px; }
     QToolTip { background-color: #111827; color: #ffffff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
     QDialog { background-color: #f5f5f5; }
+    #copilotInputArea { background-color: #f9fafb; border-top: 1px solid #e5e7eb; }
+    #copilotSendBtn { background-color: #2563eb; color: #ffffff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    #copilotSendBtn:hover { background-color: #1d4ed8; }
+    #copilotSendBtn:pressed { background-color: #1e40af; }
+    #copilotSendBtn:disabled { background-color: #93c5fd; color: #ffffff; }
 )";
 
 // Theme 1: 深色 (Dark)
 static const char *THEME_DARK = R"(
-    * { font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #e5e7eb; }
+    * { font-family: "Source Han Sans SC", "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #e5e7eb; }
     QMainWindow, QWidget { background-color: #111827; }
     QMenuBar { background-color: #1f2937; border-bottom: 1px solid #374151; padding: 0 4px; spacing: 2px; }
     QMenuBar::item { padding: 6px 12px; border-radius: 4px; color: #d1d5db; }
@@ -113,11 +125,16 @@ static const char *THEME_DARK = R"(
     QStatusBar { background-color: #1f2937; border-top: 1px solid #374151; color: #9ca3af; font-size: 12px; padding: 0 8px; }
     QToolTip { background-color: #f9fafb; color: #111827; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
     QDialog { background-color: #111827; }
+    #copilotInputArea { background-color: #1a2332; border-top: 1px solid #374151; }
+    #copilotSendBtn { background-color: #3b82f6; color: #ffffff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    #copilotSendBtn:hover { background-color: #2563eb; }
+    #copilotSendBtn:pressed { background-color: #1d4ed8; }
+    #copilotSendBtn:disabled { background-color: #1e3a5f; color: #6b7280; }
 )";
 
 // Theme 2: 蓝色 (Blue)
 static const char *THEME_BLUE = R"(
-    * { font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #1e293b; }
+    * { font-family: "Source Han Sans SC", "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #1e293b; }
     QMainWindow, QWidget { background-color: #f0f4ff; }
     QMenuBar { background-color: #ffffff; border-bottom: 1px solid #c7d2fe; padding: 0 4px; spacing: 2px; }
     QMenuBar::item { padding: 6px 12px; border-radius: 4px; color: #334155; }
@@ -162,11 +179,16 @@ static const char *THEME_BLUE = R"(
     QStatusBar { background-color: #ffffff; border-top: 1px solid #c7d2fe; color: #6366f1; font-size: 12px; padding: 0 8px; }
     QToolTip { background-color: #1e3a8a; color: #ffffff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
     QDialog { background-color: #f0f4ff; }
+    #copilotInputArea { background-color: #eef2ff; border-top: 1px solid #c7d2fe; }
+    #copilotSendBtn { background-color: #4f46e5; color: #ffffff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    #copilotSendBtn:hover { background-color: #4338ca; }
+    #copilotSendBtn:pressed { background-color: #3730a3; }
+    #copilotSendBtn:disabled { background-color: #a5b4fc; color: #ffffff; }
 )";
 
 // Theme 3: 绿色 (Green)
 static const char *THEME_GREEN = R"(
-    * { font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #1a2e1a; }
+    * { font-family: "Source Han Sans SC", "Microsoft YaHei UI", "Segoe UI", sans-serif; font-size: 13px; color: #1a2e1a; }
     QMainWindow, QWidget { background-color: #f0faf0; }
     QMenuBar { background-color: #ffffff; border-bottom: 1px solid #a7f3d0; padding: 0 4px; spacing: 2px; }
     QMenuBar::item { padding: 6px 12px; border-radius: 4px; color: #166534; }
@@ -211,6 +233,11 @@ static const char *THEME_GREEN = R"(
     QStatusBar { background-color: #ffffff; border-top: 1px solid #a7f3d0; color: #059669; font-size: 12px; padding: 0 8px; }
     QToolTip { background-color: #14532d; color: #ffffff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
     QDialog { background-color: #f0faf0; }
+    #copilotInputArea { background-color: #f0fdf4; border-top: 1px solid #a7f3d0; }
+    #copilotSendBtn { background-color: #059669; color: #ffffff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    #copilotSendBtn:hover { background-color: #047857; }
+    #copilotSendBtn:pressed { background-color: #065f46; }
+    #copilotSendBtn:disabled { background-color: #6ee7b7; color: #ffffff; }
 )";
 
 static const char *THEMES[] = { THEME_LIGHT, THEME_DARK, THEME_BLUE, THEME_GREEN };
@@ -220,6 +247,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_serialManager(new SerialManager(this))
     , m_configManager(new ConfigManager(this))
+    , m_aiClient(new AiClient(this))
     , m_logPaused(false)
 {
     qobject_cast<QApplication *>(qApp)->setStyleSheet(THEMES[0]);
@@ -245,6 +273,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_serialManager, &SerialManager::portOpened, this, &MainWindow::onPortOpened);
     connect(m_serialManager, &SerialManager::portClosed, this, &MainWindow::onPortClosed);
 
+    // AI diagnostics
+    connect(m_aiClient, &AiClient::resultReady, this, &MainWindow::onAiResultReady);
+    connect(m_aiClient, &AiClient::errorOccurred, this, &MainWindow::onAiError);
+    connect(m_copilot, &DashboardCopilot::aiControlGenerated, this, &MainWindow::onControlGenerated);
+
     onRefreshPorts();
     statusBar()->showMessage("就绪");
 }
@@ -254,17 +287,17 @@ MainWindow::~MainWindow() {}
 void MainWindow::setupUI()
 {
     setWindowTitle("串口上位机助手");
-    setMinimumSize(1100, 750);
-    resize(1200, 800);
+    setMinimumSize(1200, 750);
+    resize(1400, 800);
 
-    QWidget *central = new QWidget(this);
-    setCentralWidget(central);
-    QHBoxLayout *mainLayout = new QHBoxLayout(central);
-    mainLayout->setContentsMargins(12, 12, 12, 12);
+    // === Build left panel (original main content) ===
+    QWidget *leftPanel = new QWidget(this);
+    QHBoxLayout *mainLayout = new QHBoxLayout(leftPanel);
+    mainLayout->setContentsMargins(12, 12, 0, 12);
     mainLayout->setSpacing(12);
 
-    // === Left panel (serial config card) ===
-    QGroupBox *configGroup = new QGroupBox("串口配置", this);
+    // --- Left: serial config card ---
+    QGroupBox *configGroup = new QGroupBox("串口配置", leftPanel);
     configGroup->setFixedWidth(240);
     QFormLayout *configLayout = new QFormLayout(configGroup);
     configLayout->setLabelAlignment(Qt::AlignLeft);
@@ -291,8 +324,7 @@ void MainWindow::setupUI()
     portBtnLayout->addLayout(openCloseLayout);
     configLayout->addRow("", portBtnLayout);
 
-    // Send area with visual separator
-    QFrame *separator = new QFrame(this);
+    QFrame *separator = new QFrame(leftPanel);
     separator->setFrameShape(QFrame::HLine);
     separator->setFrameShadow(QFrame::Plain);
     separator->setStyleSheet("background-color: #e5e7eb; max-height: 1px; margin: 8px 0;");
@@ -302,24 +334,36 @@ void MainWindow::setupUI()
     configLayout->addRow("数据", m_sendEdit);
     configLayout->addRow("", m_sendBtn);
 
-    // === Right panel ===
+    // --- Right of config: log + dashboard ---
     QVBoxLayout *rightLayout = new QVBoxLayout();
     rightLayout->setContentsMargins(0, 0, 0, 0);
     rightLayout->setSpacing(12);
 
-    QGroupBox *logGroup = new QGroupBox("原始数据日志", this);
+    QGroupBox *logGroup = new QGroupBox("原始数据日志", leftPanel);
     QVBoxLayout *logLayout = new QVBoxLayout(logGroup);
     logLayout->setContentsMargins(8, 12, 8, 8);
     logLayout->setSpacing(8);
-    m_logText = new QTextEdit(this);
+    m_logText = new QTextEdit(logGroup);
     m_logText->setReadOnly(true);
     m_logText->setFont(QFont("Cascadia Code", 9));
+    m_logText->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_logText, &QWidget::customContextMenuRequested, this, [this](const QPoint &pos) {
+        QMenu menu(this);
+        QAction *aiAction = menu.addAction("AI 解析选中数据");
+        aiAction->setEnabled(!m_aiClient->isBusy());
+        connect(aiAction, &QAction::triggered, this, &MainWindow::onAiAnalyzeSelected);
+        menu.addSeparator();
+        QAction *copyAction = menu.addAction("复制", this, [this]() { m_logText->copy(); });
+        copyAction->setEnabled(m_logText->textCursor().hasSelection());
+        menu.addAction("全选", this, [this]() { m_logText->selectAll(); });
+        menu.exec(m_logText->viewport()->mapToGlobal(pos));
+    });
     logLayout->addWidget(m_logText);
 
     QHBoxLayout *logControlLayout = new QHBoxLayout();
     logControlLayout->setSpacing(8);
-    m_pauseLogCheck = new QCheckBox("暂停显示", this);
-    m_clearLogBtn = new QPushButton("清空", this);
+    m_pauseLogCheck = new QCheckBox("暂停显示", leftPanel);
+    m_clearLogBtn = new QPushButton("清空", leftPanel);
     m_clearLogBtn->setStyleSheet(
         "QPushButton { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; "
         "border-radius: 4px; padding: 4px 12px; font-size: 12px; }"
@@ -331,28 +375,58 @@ void MainWindow::setupUI()
     logControlLayout->addWidget(m_clearLogBtn);
     logLayout->addLayout(logControlLayout);
 
-    QGroupBox *dashboardGroup = new QGroupBox("动态仪表盘", this);
+    QGroupBox *dashboardGroup = new QGroupBox("动态仪表盘", leftPanel);
     QVBoxLayout *dashLayout = new QVBoxLayout(dashboardGroup);
     dashLayout->setContentsMargins(0, 12, 0, 0);
-    m_dashboard = new DashboardArea(m_serialManager, this);
+    m_dashboard = new DashboardArea(m_serialManager, leftPanel);
     dashLayout->addWidget(m_dashboard);
 
-    // Auto-save config when dashboard save is clicked
     connect(m_dashboard, &DashboardArea::configSaved, this, [this](const QJsonArray &config) {
         m_configManager->saveToFile("autosave.json", config);
         statusBar()->showMessage("配置已自动保存", 3000);
     });
 
-    QSplitter *splitter = new QSplitter(Qt::Vertical, this);
-    splitter->addWidget(logGroup);
-    splitter->addWidget(dashboardGroup);
-    splitter->setStretchFactor(0, 1);
-    splitter->setStretchFactor(1, 2);
-    splitter->setHandleWidth(1);
+    QSplitter *leftSplitter = new QSplitter(Qt::Vertical, leftPanel);
+    leftSplitter->addWidget(logGroup);
+    leftSplitter->addWidget(dashboardGroup);
+    leftSplitter->setStretchFactor(0, 1);
+    leftSplitter->setStretchFactor(1, 2);
+    leftSplitter->setHandleWidth(1);
 
-    rightLayout->addWidget(splitter, 1);
+    rightLayout->addWidget(leftSplitter, 1);
     mainLayout->addWidget(configGroup);
     mainLayout->addLayout(rightLayout, 1);
+
+    // === Build right AI panel ===
+    QWidget *aiPanel = new QWidget(this);
+    QVBoxLayout *aiLayout = new QVBoxLayout(aiPanel);
+    aiLayout->setContentsMargins(0, 12, 12, 12);
+    aiLayout->setSpacing(0);
+
+    m_aiTabWidget = new QTabWidget(aiPanel);
+
+    // Tab 0: 数据诊断
+    m_aiResultText = new QTextEdit(m_aiTabWidget);
+    m_aiResultText->setReadOnly(true);
+    m_aiResultText->setFont(QFont("Source Han Sans SC", 10));
+    m_aiResultText->setPlaceholderText("选中接收区中的串口数据，右键选择 \"AI 解析选中数据\" 即可发起分析...");
+    m_aiTabWidget->addTab(m_aiResultText, "数据诊断");
+
+    // Tab 1: 仪表盘副驾
+    m_copilot = new DashboardCopilot(m_aiClient, m_aiTabWidget);
+    m_aiTabWidget->addTab(m_copilot, "仪表盘副驾");
+
+    aiLayout->addWidget(m_aiTabWidget);
+
+    // === Horizontal splitter: left main + right AI ===
+    QSplitter *mainSplitter = new QSplitter(Qt::Horizontal, this);
+    mainSplitter->addWidget(leftPanel);
+    mainSplitter->addWidget(aiPanel);
+    mainSplitter->setStretchFactor(0, 5);  // left ~71%
+    mainSplitter->setStretchFactor(1, 2);  // right ~29%
+    mainSplitter->setHandleWidth(2);
+
+    setCentralWidget(mainSplitter);
 }
 
 void MainWindow::setupSerialConfigPanel()
@@ -434,6 +508,10 @@ void MainWindow::setupMenuBar()
     QWidgetAction *wa = new QWidgetAction(this);
     wa->setDefaultWidget(m_themeCombo);
     themeMenu->addAction(wa);
+
+    // AI menu
+    QMenu *aiMenu = menuBar->addMenu("AI(&A)");
+    aiMenu->addAction("AI 设置(&S)...", this, &MainWindow::onAiSettings);
 }
 
 void MainWindow::onRefreshPorts() { m_portCombo->clear(); m_portCombo->addItems(m_serialManager->availablePorts()); }
@@ -577,4 +655,146 @@ void MainWindow::applyTheme(int index)
 {
     if (index >= 0 && index < THEME_COUNT)
         qobject_cast<QApplication *>(qApp)->setStyleSheet(THEMES[index]);
+}
+
+void MainWindow::onAiSettings()
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle("AI 设置");
+    dialog.setMinimumWidth(420);
+
+    auto *layout = new QFormLayout(&dialog);
+    layout->setContentsMargins(20, 20, 20, 20);
+    layout->setVerticalSpacing(12);
+    layout->setHorizontalSpacing(10);
+
+    auto *apiKeyEdit = new QLineEdit(&dialog);
+    apiKeyEdit->setText(m_aiClient->apiKey());
+    apiKeyEdit->setEchoMode(QLineEdit::Password);
+    apiKeyEdit->setPlaceholderText("sk-...");
+    layout->addRow("API Key", apiKeyEdit);
+
+    auto *toggleBtn = new QPushButton("显示", &dialog);
+    toggleBtn->setFixedWidth(64);
+    QObject::connect(toggleBtn, &QPushButton::clicked, apiKeyEdit, [apiKeyEdit, toggleBtn]() {
+        if (apiKeyEdit->echoMode() == QLineEdit::Password) {
+            apiKeyEdit->setEchoMode(QLineEdit::Normal);
+            toggleBtn->setText("隐藏");
+        } else {
+            apiKeyEdit->setEchoMode(QLineEdit::Password);
+            toggleBtn->setText("显示");
+        }
+    });
+    // Place toggle button next to API Key field
+    auto *keyLayout = new QHBoxLayout();
+    keyLayout->addWidget(apiKeyEdit, 1);
+    keyLayout->addWidget(toggleBtn);
+    layout->removeRow(0); // remove the plain apiKeyEdit row
+    layout->addRow("API Key", keyLayout);
+
+    auto *baseUrlEdit = new QLineEdit(&dialog);
+    baseUrlEdit->setText(m_aiClient->baseUrl());
+    baseUrlEdit->setPlaceholderText("https://api.deepseek.com");
+    layout->addRow("Base URL", baseUrlEdit);
+
+    auto *modelEdit = new QLineEdit(&dialog);
+    modelEdit->setText(m_aiClient->model());
+    modelEdit->setPlaceholderText("deepseek-chat");
+    layout->addRow("模型", modelEdit);
+
+    // Preset buttons
+    auto *presetLayout = new QHBoxLayout();
+    presetLayout->setSpacing(6);
+    auto makePreset = [&](const QString &name, const QString &url, const QString &model) {
+        auto *btn = new QPushButton(name, &dialog);
+        btn->setStyleSheet(
+            "QPushButton { background-color: transparent; color: #374151; border: 1px solid #d1d5db; "
+            "border-radius: 4px; padding: 2px 8px; font-size: 11px; }"
+            "QPushButton:hover { background-color: #f3f4f6; }");
+        QObject::connect(btn, &QPushButton::clicked, &dialog, [baseUrlEdit, modelEdit, url, model]() {
+            baseUrlEdit->setText(url);
+            modelEdit->setText(model);
+        });
+        presetLayout->addWidget(btn);
+    };
+    makePreset("DeepSeek", "https://api.deepseek.com", "deepseek-chat");
+    makePreset("OpenAI", "https://api.openai.com", "gpt-4o-mini");
+    makePreset("Moonshot", "https://api.moonshot.cn", "moonshot-v1-8k");
+    presetLayout->addStretch();
+    layout->addRow("快捷预设", presetLayout);
+
+    // Dialog buttons
+    auto *btnBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    btnBox->button(QDialogButtonBox::Ok)->setText("确定");
+    btnBox->button(QDialogButtonBox::Cancel)->setText("取消");
+    QObject::connect(btnBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(btnBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addRow(btnBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        m_aiClient->setApiKey(apiKeyEdit->text().trimmed());
+        m_aiClient->setBaseUrl(baseUrlEdit->text().trimmed());
+        m_aiClient->setModel(modelEdit->text().trimmed());
+        statusBar()->showMessage("AI 设置已保存", 3000);
+    }
+}
+
+void MainWindow::onAiAnalyzeSelected()
+{
+    const QString selected = m_logText->textCursor().selectedText();
+    if (selected.isEmpty()) {
+        QMessageBox::information(this, "提示", "请先在接收区中框选需要分析的串口数据");
+        return;
+    }
+
+    if (m_aiClient->apiKey().isEmpty()) {
+        QMessageBox::information(this, "提示", "请先通过菜单 AI -> AI 设置 配置 API Key");
+        onAiSettings();
+        return;
+    }
+
+    m_aiTabWidget->setCurrentIndex(0);
+    m_aiResultText->append("<hr><b>[请求] 正在分析选中数据...</b>");
+    m_aiResultText->append("<pre>" + selected.toHtmlEscaped() + "</pre>");
+    m_aiClient->analyze(selected);
+}
+
+void MainWindow::onAiResultReady(const QString &result)
+{
+    m_aiResultText->append("<b>[AI 分析结果]</b>");
+    m_aiResultText->append(result);
+    m_aiResultText->append("");
+    // Auto-scroll to bottom
+    QScrollBar *sb = m_aiResultText->verticalScrollBar();
+    sb->setValue(sb->maximum());
+    statusBar()->showMessage("AI 分析完成", 3000);
+}
+
+void MainWindow::onAiError(const QString &errorMsg)
+{
+    m_aiResultText->append("<b style='color:red;'>[错误]</b> " + errorMsg.toHtmlEscaped());
+    statusBar()->showMessage("AI 错误: " + errorMsg, 5000);
+}
+
+void MainWindow::onControlGenerated(const QJsonObject &config)
+{
+    const QString type = config["type"].toString();
+    if (type == "display") {
+        m_dashboard->addDisplay(
+            config["label"].toString(),
+            config["formatStr"].toString());
+    } else if (type == "indicator") {
+        m_dashboard->addIndicator(
+            config["name"].toString(),
+            config["expression"].toString(),
+            config["formatStr"].toString(),
+            config["trueColor"].toString("#22c55e"),
+            config["falseColor"].toString("#ef4444"));
+    } else if (type == "button") {
+        m_dashboard->addButton(
+            config["name"].toString(),
+            config["message"].toString(),
+            config["hexMode"].toBool(false));
+    }
+    statusBar()->showMessage("已生成控件: " + type, 3000);
 }

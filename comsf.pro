@@ -1,4 +1,4 @@
-QT       += core gui widgets serialport
+QT       += core gui widgets serialport network
 
 CONFIG += c++17
 
@@ -6,8 +6,10 @@ TARGET = comsf
 TEMPLATE = app
 
 SOURCES += \
+    ssp_stub.c \
     main.cpp \
     mainwindow.cpp \
+    aiclient.cpp \
     serialmanager.cpp \
     parser.cpp \
     expressionevaluator.cpp \
@@ -17,12 +19,14 @@ SOURCES += \
     widgets/custombutton.cpp \
     widgets/datadisplay.cpp \
     widgets/logicindicator.cpp \
+    widgets/dashboardcopilot.cpp \
     dialogs/buttonconfigdialog.cpp \
     dialogs/displayconfigdialog.cpp \
     dialogs/indicatorconfigdialog.cpp
 
 HEADERS += \
     mainwindow.h \
+    aiclient.h \
     serialmanager.h \
     parser.h \
     expressionevaluator.h \
@@ -32,6 +36,7 @@ HEADERS += \
     widgets/custombutton.h \
     widgets/datadisplay.h \
     widgets/logicindicator.h \
+    widgets/dashboardcopilot.h \
     dialogs/buttonconfigdialog.h \
     dialogs/displayconfigdialog.h \
     dialogs/indicatorconfigdialog.h

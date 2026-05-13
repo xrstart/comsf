@@ -10,10 +10,14 @@
 #include <QLabel>
 #include <QTimer>
 #include <QByteArray>
+#include <QJsonObject>
 
 class SerialManager;
 class DashboardArea;
 class ConfigManager;
+class AiClient;
+class DashboardCopilot;
+class QTabWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -37,6 +41,13 @@ private slots:
     void onExportConfig();
     void onImportConfig();
     void onThemeChanged(int index);
+
+    // AI diagnostics
+    void onAiSettings();
+    void onAiAnalyzeSelected();
+    void onAiResultReady(const QString &result);
+    void onAiError(const QString &errorMsg);
+    void onControlGenerated(const QJsonObject &config);
 
 private:
     void setupUI();
@@ -73,6 +84,12 @@ private:
 
     // Theme
     QComboBox *m_themeCombo;
+
+    // AI diagnostics
+    AiClient *m_aiClient;
+    QTabWidget *m_aiTabWidget;
+    QTextEdit *m_aiResultText;
+    DashboardCopilot *m_copilot;
 
     QByteArray m_recvBuffer;
     QTimer *m_logFlushTimer;
